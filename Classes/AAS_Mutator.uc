@@ -22,7 +22,7 @@ function CheckMatchHasBegun()
 {
 	if(MyKFGI.MyKFGRI.bMatchHasBegun)
 	{
-		SetTimer(SupplyInterval, true, 'AutoAmmoSupply');
+		SetTimer(SupplyInterval, false, 'AutoAmmoSupply');
 		return;
 	}
 
@@ -53,6 +53,27 @@ function AutoAmmoSupply()
 			{
 				NotifySupply(KFPC);
 			}
+		}
+	}
+	SetTimer(SupplyInterval, false, 'AutoAmmoSupply');
+}
+
+function Mutate(string MutateString, PlayerController Sender)
+{
+	local array<string> splitbuf;
+
+	if(WorldInfo.NetMode == NM_Standalone || Sender.PlayerReplicationInfo.bAdmin)
+	{
+		ParseStringIntoArray(MutateString, splitbuf, " ", false);
+
+		if (splitbuf[0] ~= "SetSupplyInterval")
+		{
+			if (float(splitbuf[1]) > 0.f)
+			{
+				SupplyInterval = float(splitbuf[1]);
+				SaveConfig();
+			}
+			Sender.ClientMessage("SupplyInterval=" $ string(SupplyInterval));
 		}
 	}
 }
