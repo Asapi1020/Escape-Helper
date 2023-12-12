@@ -7,7 +7,7 @@ var config bool bAutoSave;
 
 var bool bCurrentlySaved;
 var array<EH_ReplicationInfo> ActivePlayers;
-var array<int> TraderTriggerIndex;
+var array<int> TraderTriggerIndex, PlayerStartIndex;
 var vector BossSpawnLoc;
 
 const DefaultInterval = 60.f;
@@ -352,9 +352,9 @@ function CustomSetWave(optional byte WaveNum)
 	Ext_KillZeds();
 
 	KFGameInfo_Objective(GameMaster).MyKFMI.ObjectiveModeObjectives[Min(WaveNum, GameMaster.MyKFGRI.WaveMax)-2].bShouldAutoStartWave = true;
-	GameMaster.WaveNum = Clamp(WaveNum-2, 0, GameMaster.WaveMax-2);
+	GameMaster.GotoState('TraderOpen');
+	GameMaster.WaveNum = Clamp(WaveNum-1, 0, GameMaster.WaveMax-1);
 	GameMaster.MyKFGRI.WaveNum = GameMaster.WaveNum;
-	GameMaster.StartWave();
 	GameMaster.WaveEnded(WEC_WaveWon);
 
 	if(WaveNum == 11)
@@ -362,7 +362,7 @@ function CustomSetWave(optional byte WaveNum)
 		SetTimer(3.f, false, 'CheckWaveActive');
 	}
 
-	SetTimer((WaveNum != 11 ? 1.f : 12.f), false, 'RichTeleport');
+	SetTimer(1.f, false, 'RichTeleport');
 }
 
 function MonitorBossLoc()
@@ -492,7 +492,7 @@ function RichTeleport()
 		}
 
 		KFPRI.AddDosh( 1000000 );
-		KFPC.Pawn.SetLocation(ChoosePlayerStart().Location + vect(0,0,15));
+		KFPC.Pawn.SetLocation(GetPlayerStartFromIndex(PlayerStartIndex[MyKFGI.MyKFGRI.WaveNum-1]).Location + vect(0,0,15));
 		KFPC.Pawn.CreateInventory(class'KFWeap_Healer_Syringe');
 	}
 
@@ -530,6 +530,22 @@ function PlayerStart ChoosePlayerStart()
 	return none;
 }
 
+function PlayerStart GetPlayerStartFromIndex(int index)
+{
+	local PlayerStart P;
+
+	foreach WorldInfo.AllNavigationPoints(class'PlayerStart', P)
+	{
+		if(GetObjectIndex(P) == index)
+		{
+			return P;
+		}
+	}
+
+	`Log("Not found PlayerStart_" $ string(index));
+	return none;
+}
+
 function BroadcastEcho(string msg)
 {
 	local EH_ReplicationInfo R;
@@ -542,21 +558,6 @@ function BroadcastEcho(string msg)
 
 defaultproperties
 {
-	TraderTriggerIndex=(INDEX_NONE, 0, 1, 3, 6, 6, 2, 4, 7, 5)
+	TraderTriggerIndex=(INDEX_NONE, 0, 1, 3, INDEX_NONE, 6, 2, 4, 7, 5)
+	PlayerStartIndex=(13, 21, 11, 23, 15, 8, 16, 22, 12, 0)
 }
-
-/*
-wave=(PlayerStart, TraderTrigger)
- 2=(13, -)
- 3=(21, 0)
- 4=(23, 3)
- 5=(15, -)
- 6=( 8, 6)
- 7=(16, 2)
- 8=(22, 4)
- 9=(12, 7)
-10=( 0, 5)
-
-Trigger_1
-KFPathnode_3109
-*/

@@ -17,12 +17,12 @@ function Tick(float Delta)
 	}
 }
 
-unreliable client simulated function NotifyMessage(string msg)
+reliable client simulated function NotifyMessage(string msg)
 {
 	KFPlayerController(PlayerOwner).MyGFxHUD.ShowNonCriticalMessage(msg);
 }
 
-unreliable client simulated function NotifyMe()
+reliable client simulated function NotifyMe()
 {
 	local KFPlayerController KFPC;
 
@@ -34,12 +34,12 @@ unreliable client simulated function NotifyMe()
     WriteModMessage("Escape Helper is loaded");
 }
 
-unreliable client simulated function WriteModMessage(string msg)
+reliable client simulated function WriteModMessage(string msg)
 {
 	WriteToChat(msg, "b83dba");
 }
 
-unreliable client simulated function WriteToChat(string Message, string HexColor)
+reliable client simulated function WriteToChat(string Message, string HexColor)
 {
     local KFPlayerController KFPC;
 
